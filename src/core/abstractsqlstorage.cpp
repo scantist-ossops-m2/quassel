@@ -53,7 +53,14 @@ QSqlDatabase AbstractSqlStorage::logDb()
     if (!_connectionPool.contains(QThread::currentThread()))
         addConnectionToPool();
 
-    return QSqlDatabase::database(_connectionPool[QThread::currentThread()]->name());
+    QSqlDatabase db = QSqlDatabase::database(_connectionPool[QThread::currentThread()]->name(),false);
+
+    if (!db.isOpen()) {
+        qWarning() << "Database connection" << displayName() << "for thread" << QThread::currentThread() << "was lost, attempting to reconnect...";
+        dbConnect(db);
+    }
+
+    return db;
 }
 
 
@@ -90,12 +97,21 @@ void AbstractSqlStorage::addConnectionToPool()
         db.setPassword(password());
     }
 
+    dbConnect(db);
+}
+
+
+void AbstractSqlStorage::dbConnect(QSqlDatabase &db)
+{
     if (!db.open()) {
-        qWarning() << "Unable to open database" << displayName() << "for thread" << QThread::currentThread();
-        qWarning() << "-" << db.lastError().text();
+        quWarning() << "Unable to open database" << displayName() << "for thread" << QThread::currentThread();
+        quWarning() << "-" << db.lastError().text();
     }
     else {
-        initDbSession(db);
+        if (!initDbSession(db)) {
+            quWarning() << "Unable to initialize database" << displayName() << "for thread" << QThread::currentThread();
+            db.close();
+        }
     }
 }
 
