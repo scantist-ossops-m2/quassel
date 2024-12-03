@@ -39,6 +39,8 @@ set(SOURCES
     transfermanager.cpp
     util.cpp
 
+    serializers/serializers.cpp
+
     protocols/datastream/datastreampeer.cpp
     protocols/legacy/legacypeer.cpp
 
