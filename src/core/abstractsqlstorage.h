@@ -80,13 +80,14 @@ protected:
      *  When reimplementing this method, don't use logDB() inside this function as
      *  this would cause as we're just about to initialize that DB connection.
      */
-    inline virtual void initDbSession(QSqlDatabase & /* db */) {}
+    inline virtual bool initDbSession(QSqlDatabase & /* db */) { return true; }
 
 private slots:
     void connectionDestroyed();
 
 private:
     void addConnectionToPool();
+    void dbConnect(QSqlDatabase &db);
 
     int _schemaVersion;
     bool _debug;
